@@ -47,6 +47,13 @@ describe('Document', () => {
             );
             expect(textElement!.data).toBe('second');
 
+            expect(doc.refs.myParagraph.slug).toBe('myParagraph');
+            expect(doc.refs.myText.slug).toBe('myText');
+            expect(doc.refs.myParagraph.url).toBeDefined();
+            expect(doc.refs.myText.url).toBeDefined();
+            expect(typeof doc.refs.myParagraph.url).toBe('string');
+            expect(typeof doc.refs.myText.url).toBe('string');
+
             expect(doc.blocks.data).toHaveLength(4);
             expect(doc.blocks.data[0]).toBe(paragraphElement);
             expect(doc.blocks.data[2]).toBe(paragraphElement);

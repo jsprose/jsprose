@@ -8,16 +8,28 @@ export interface JSProseRef<
 > {
     element?: TJSProseElement;
     readonly tag: JSProseTag<TJSProseElement, any>;
+    readonly slug?: string;
+    readonly url: string;
 }
 
-export function jsproseRef<
+export type JSProseRefDefs = {
+    [key: string]: JSProseTag<any, any>;
+};
+
+export type JSProseRefMap<TRefDefs extends JSProseRefDefs> = {
+    [K in keyof TRefDefs]: JSProseRef<ReturnType<TRefDefs[K]>>;
+};
+
+export function defineRef<
     TTag extends JSProseTag<any, any>,
     TJSProseElement extends ReturnType<TTag>,
->(tag: TTag): JSProseRef<TJSProseElement> {
+>(tag: TTag, slug?: string): JSProseRef<TJSProseElement> {
     let _element: TJSProseElement | undefined = undefined;
 
     return {
         tag: tag as JSProseTag<TJSProseElement, any>,
+        slug,
+        url: import.meta.url,
         get element() {
             return _element;
         },
@@ -37,6 +49,18 @@ export function jsproseRef<
             _element = value;
         },
     };
+}
+
+export function defineRefs<TRefDefs extends JSProseRefDefs>(
+    refs: TRefDefs,
+): JSProseRefMap<TRefDefs> {
+    const definedRefs = {} as any;
+
+    for (const [key, tag] of Object.entries(refs)) {
+        definedRefs[key] = defineRef(tag, key);
+    }
+
+    return definedRefs;
 }
 
 export function toElement<

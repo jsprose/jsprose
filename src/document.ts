@@ -1,6 +1,5 @@
-import { JSProseTag } from './tag';
 import { JSProseElement } from './element';
-import { jsproseRef, JSProseRef } from './ref';
+import { defineRefs, JSProseRef, JSProseRefDefs, JSProseRefMap } from './ref';
 import { JSProseError } from './error';
 
 export interface JSProseDocument<
@@ -12,32 +11,30 @@ export interface JSProseDocument<
 }
 
 export function defineDocument<
-    TRefDefs extends Record<string, JSProseTag<any, any>>,
-    TRefs extends {
-        [K in keyof TRefDefs]: JSProseRef<ReturnType<TRefDefs[K]>>;
-    },
+    TRefDefs extends JSProseRefDefs,
+    TRefs extends JSProseRefMap<TRefDefs>,
     TBlocks extends JSProseElement<any, any, any>,
 >(options: {
-    refs?: TRefDefs;
+    refs: TRefDefs;
     blocks: (refs: TRefs) => TBlocks;
 }): JSProseDocument<TRefs, TBlocks>;
 
 export function defineDocument<
-    TRefDefs extends Record<string, JSProseTag<any, any>>,
-    TRefs extends {
-        [K in keyof TRefDefs]: JSProseRef<ReturnType<TRefDefs[K]>>;
-    },
+    TBlocks extends JSProseElement<any, any, any>,
+>(options: { blocks: () => TBlocks }): JSProseDocument<{}, TBlocks>;
+
+export function defineDocument<
+    TRefDefs extends JSProseRefDefs,
+    TRefs extends JSProseRefMap<TRefDefs>,
     TBlocks extends JSProseElement<any, any, any>,
 >(options: {
     refs?: TRefDefs;
     blocks: (refs?: TRefs) => TBlocks;
 }): JSProseDocument<TRefs | {}, TBlocks> {
-    const refs = {} as TRefs;
+    let refs = {} as TRefs;
 
     if (options.refs) {
-        for (const [key, tag] of Object.entries(options.refs)) {
-            (refs as any)[key] = jsproseRef(tag);
-        }
+        refs = defineRefs(options.refs) as TRefs;
     }
 
     const blocks = options.blocks(refs);

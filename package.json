@@ -2,7 +2,7 @@
     "type": "module",
     "name": "jsprose",
     "version": "1.0.0-dev.1",
-    "description": "Write content in JSX/TSX! Ship everywhere!",
+    "description": "📜 Write content in JSX/TSX! Ship everywhere!",
     "keywords": [
         "content",
         "jsx",

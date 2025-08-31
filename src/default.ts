@@ -1,4 +1,5 @@
 import { JSProseBlock, JSProseInliner } from './element';
+import { JSProseError } from './error';
 import { defineBlockTag, defineInlinerTag } from './tag';
 import { isBlockElement, isInlinerElement, isTagElement } from './utils';
 
@@ -12,7 +13,7 @@ export const Text = defineInlinerTag<TextElement>(textName, (props) => {
     const children = props.children ?? [];
 
     if (children.length === 0) {
-        throw '<Text> cannot be empty!';
+        throw new JSProseError('<Text> cannot be empty!');
     }
 
     let concatenated = '';
@@ -23,7 +24,9 @@ export const Text = defineInlinerTag<TextElement>(textName, (props) => {
         } else if (isTagElement(child, Text)) {
             concatenated += child.data;
         } else {
-            throw '<Text> can only contain <Text> elements or pure strings!';
+            throw new JSProseError(
+                '<Text> can only contain <Text> elements or pure strings!',
+            );
         }
     }
 
@@ -45,12 +48,14 @@ export const Paragraph = defineBlockTag<ParagraphElement>(
         const children = props.children ?? [];
 
         if (children.length === 0) {
-            throw '<Paragraph> cannot be empty!';
+            throw new JSProseError('<Paragraph> cannot be empty!');
         }
 
         for (const child of children) {
             if (isBlockElement(child)) {
-                throw `<Paragraph> can contain only inliners! Block <${child.name}> found!`;
+                throw new JSProseError(
+                    `<Paragraph> can contain only inliners! Block <${child.name}> found!`,
+                );
             }
         }
 
@@ -71,12 +76,14 @@ export const Blocks = defineBlockTag<BlocksElement>(blocksName, (props) => {
     const children = props.children ?? [];
 
     if (children.length === 0) {
-        throw '<Blocks> cannot be empty!';
+        throw new JSProseError('<Blocks> cannot be empty!');
     }
 
     for (const child of children) {
         if (isInlinerElement(child)) {
-            throw `<Blocks> can contain only blocks! Inliner <${child.name}> found!`;
+            throw new JSProseError(
+                `<Blocks> can contain only blocks! Inliner <${child.name}> found!`,
+            );
         }
     }
 
@@ -98,12 +105,14 @@ export const Inliners = defineInlinerTag<InlinersElement>(
         const children = props.children ?? [];
 
         if (children.length === 0) {
-            throw '<Inliners> cannot be empty!';
+            throw new JSProseError('<Inliners> cannot be empty!');
         }
 
         for (const child of children) {
             if (isBlockElement(child)) {
-                throw `<Inliners> can contain only inliners! Block <${child.name}> found!`;
+                throw new JSProseError(
+                    `<Inliners> can contain only inliners! Block <${child.name}> found!`,
+                );
             }
         }
 

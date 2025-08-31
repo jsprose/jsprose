@@ -1,4 +1,5 @@
 import { JSProseElement } from './element';
+import { JSProseError } from './error';
 import { JSProseTag } from './tag';
 import { isTagElement } from './utils';
 
@@ -23,12 +24,12 @@ export function jsproseRef<
         set element(value: TJSProseElement | undefined) {
             if (value !== undefined) {
                 if (_element !== undefined) {
-                    throw new Error(
+                    throw new JSProseError(
                         `Reference for tag <${tag.name}> is already assigned and cannot be reassigned!`,
                     );
                 }
                 if (!isTagElement(value, tag)) {
-                    throw new Error(
+                    throw new JSProseError(
                         `Element assigned to reference does not match expected tag <${tag.name}>!`,
                     );
                 }

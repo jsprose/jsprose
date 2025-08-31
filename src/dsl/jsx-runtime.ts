@@ -2,6 +2,7 @@ import { toElement } from '../ref';
 import { TextElement } from '../default';
 import { JSProseElement, JSProseType, createElement } from '../element';
 import { JSProseTag } from '../tag';
+import { JSProseError } from 'src/error';
 
 declare global {
     namespace JSX {
@@ -54,7 +55,9 @@ function unwrapRef(child: any) {
     if (child && typeof child === 'object' && 'element' in child) {
         const element = toElement(child);
         if (element === undefined) {
-            throw new Error('Unable to unwrap undefined JSProse reference!');
+            throw new JSProseError(
+                'Unable to unwrap undefined JSProse reference!',
+            );
         }
         return element;
     }

@@ -1,6 +1,7 @@
 import { JSProseTag } from './tag';
 import { JSProseElement } from './element';
 import { jsproseRef, JSProseRef } from './ref';
+import { JSProseError } from './error';
 
 export interface JSProseDocument<
     TRefs extends Record<string, JSProseRef<any>>,
@@ -46,7 +47,9 @@ export function defineDocument<
             const assignedElement = (ref as JSProseRef<any>).element;
 
             if (!assignedElement) {
-                throw `Document reference "${key}" was not assigned a value in the blocks function!`;
+                throw new JSProseError(
+                    `Document reference "${key}" was not assigned a value in the blocks function!`,
+                );
             }
         }
     }

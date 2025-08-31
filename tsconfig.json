@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "src/dsl",
+        "baseUrl": "."
+    },
+    "include": ["src/**/*", "tests/**/*"]
+}

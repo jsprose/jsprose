@@ -123,7 +123,7 @@ describe('Document', () => {
                     },
                 });
             }).toThrow(
-                'Element assigned to reference does not match expected tag <text>!',
+                'Element assigned to reference "textRef" does not match expected tag <text>!',
             );
         });
     });

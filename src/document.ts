@@ -44,8 +44,10 @@ export function defineDocument<
             const assignedElement = (ref as JSProseRef<any>).element;
 
             if (!assignedElement) {
+                const refObj = ref as JSProseRef<any>;
+                const refSlug = refObj.slug ? ` "${refObj.slug}"` : ` "${key}"`;
                 throw new JSProseError(
-                    `Document reference "${key}" was not assigned a value in the blocks function!`,
+                    `Document reference${refSlug} was not assigned a value in the blocks function!`,
                 );
             }
         }

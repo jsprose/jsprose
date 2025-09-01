@@ -36,13 +36,15 @@ export function defineRef<
         set element(value: TJSProseElement | undefined) {
             if (value !== undefined) {
                 if (_element !== undefined) {
+                    const refSlug = slug ? ` "${slug}"` : '';
                     throw new JSProseError(
-                        `Reference for tag <${tag.name}> is already assigned and cannot be reassigned!`,
+                        `Reference${refSlug} for tag <${tag.name}> is already assigned and cannot be reassigned!`,
                     );
                 }
                 if (!isTagElement(value, tag)) {
+                    const refSlug = slug ? ` "${slug}"` : '';
                     throw new JSProseError(
-                        `Element assigned to reference does not match expected tag <${tag.name}>!`,
+                        `Element assigned to reference${refSlug} does not match expected tag <${tag.name}>!`,
                     );
                 }
             }

@@ -55,8 +55,9 @@ function unwrapRef(child: any) {
     if (child && typeof child === 'object' && 'element' in child) {
         const element = toElement(child);
         if (element === undefined) {
+            const refSlug = child.slug ? ` "${child.slug}"` : '';
             throw new JSProseError(
-                'Unable to unwrap undefined JSProse reference!',
+                `Unable to unwrap undefined JSProse reference${refSlug}!`,
             );
         }
         return element;

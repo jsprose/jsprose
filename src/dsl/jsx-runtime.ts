@@ -3,6 +3,7 @@ import { TextElement } from '../default';
 import { JSProseElementAny, createElement } from '../element';
 import { JSProseTag } from '../tag';
 import { JSProseError } from 'src/error';
+import { validateInlinerChildren } from '../utils';
 
 declare global {
     namespace JSX {
@@ -12,14 +13,19 @@ declare global {
 }
 
 export function jsx<TTag extends JSProseTag<any, any>>(
-    type: TTag,
+    tag: TTag,
     props: Parameters<TTag>[0],
 ): ReturnType<TTag> {
     if (props?.children) {
-        props.children = processChildren(props.children);
+        const processedChildren = processChildren(props.children);
+        props.children = processedChildren;
+
+        if (tag.type === 'inliner') {
+            validateInlinerChildren(tag.name, processedChildren);
+        }
     }
 
-    return type(props);
+    return tag(props);
 }
 
 export const jsxs = jsx;

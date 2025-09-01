@@ -1,8 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
-import { isTagElement, isBlockElement, isInlinerElement } from '../src/utils';
+import {
+    isTagElement,
+    isBlockElement,
+    isInlinerElement,
+    validateInlinerChildren,
+} from '../src/utils';
 import { createElement, JSProseBlock, JSProseInliner } from '../src/element';
 import { defineBlockTag, defineInlinerTag } from '../src/tag';
+import { JSProseError } from '../src/error';
 
 describe('Utils', () => {
     describe('isTagElement', () => {
@@ -176,6 +182,191 @@ describe('Utils', () => {
             expect(isInlinerElement('string')).toBe(false);
             expect(isInlinerElement(null)).toBe(false);
             expect(isInlinerElement(undefined)).toBe(false);
+        });
+    });
+
+    describe('validateInlinerChildren', () => {
+        it('should not throw when inliner contains only inliner children', () => {
+            const inlinerChild = createElement<JSProseInliner<'text', string>>({
+                type: 'inliner',
+                name: 'text',
+                data: 'text data',
+            });
+
+            const children = [inlinerChild];
+
+            expect(() => {
+                validateInlinerChildren('span', children);
+            }).not.toThrow();
+        });
+
+        it('should not throw when inliner has no children', () => {
+            const children: any[] = [];
+
+            expect(() => {
+                validateInlinerChildren('span', children);
+            }).not.toThrow();
+        });
+
+        it('should throw when inliner contains block children', () => {
+            const blockChild = createElement<JSProseBlock<'paragraph', string>>(
+                {
+                    type: 'block',
+                    name: 'paragraph',
+                    data: 'paragraph data',
+                },
+            );
+
+            const children = [blockChild];
+
+            expect(() => {
+                validateInlinerChildren('span', children);
+            }).toThrow(JSProseError);
+
+            expect(() => {
+                validateInlinerChildren('span', children);
+            }).toThrow(
+                'Inliner element <span> can not contain block element <paragraph>!',
+            );
+        });
+
+        it('should throw with correct element names in error message', () => {
+            const blockChild = createElement<JSProseBlock<'div', any>>({
+                type: 'block',
+                name: 'div',
+                data: {},
+            });
+
+            const children = [blockChild];
+
+            expect(() => {
+                validateInlinerChildren('strong', children);
+            }).toThrow(
+                'Inliner element <strong> can not contain block element <div>!',
+            );
+        });
+
+        it('should throw on first block element found in mixed children', () => {
+            const inlinerChild = createElement<JSProseInliner<'text', string>>({
+                type: 'inliner',
+                name: 'text',
+                data: 'text data',
+            });
+
+            const blockChild = createElement<JSProseBlock<'paragraph', string>>(
+                {
+                    type: 'block',
+                    name: 'paragraph',
+                    data: 'paragraph data',
+                },
+            );
+
+            const anotherBlockChild = createElement<JSProseBlock<'div', any>>({
+                type: 'block',
+                name: 'div',
+                data: {},
+            });
+
+            const children = [inlinerChild, blockChild, anotherBlockChild];
+
+            expect(() => {
+                validateInlinerChildren('em', children);
+            }).toThrow(
+                'Inliner element <em> can not contain block element <paragraph>!',
+            );
+        });
+    });
+
+    describe('validateInlinerChildren integration with JSX', () => {
+        it('should validate inliner children when using JSX with inliner tags', () => {
+            const TestInliner = defineInlinerTag<
+                JSProseInliner<'test-inliner', any>
+            >('test-inliner', (props) => props.children);
+
+            const TestBlock = defineBlockTag<JSProseBlock<'test-block', any>>(
+                'test-block',
+                (props) => props.children,
+            );
+
+            // This should work - inliner containing inliner
+            expect(() => {
+                const inlinerElement = <TestInliner />;
+                const validElement = (
+                    <TestInliner>{inlinerElement}</TestInliner>
+                );
+            }).not.toThrow();
+
+            // This should throw - inliner containing block
+            expect(() => {
+                const blockElement = <TestBlock />;
+                const invalidElement = (
+                    <TestInliner>{blockElement}</TestInliner>
+                );
+            }).toThrow(JSProseError);
+
+            expect(() => {
+                const blockElement = <TestBlock />;
+                const invalidElement = (
+                    <TestInliner>{blockElement}</TestInliner>
+                );
+            }).toThrow(
+                'Inliner element <test-inliner> can not contain block element <test-block>!',
+            );
+        });
+
+        it('should allow block tags to contain both block and inliner children', () => {
+            const TestBlock = defineBlockTag<JSProseBlock<'test-block', any>>(
+                'test-block',
+                (props) => props.children,
+            );
+
+            const TestInliner = defineInlinerTag<
+                JSProseInliner<'test-inliner', any>
+            >('test-inliner', (props) => props.children);
+
+            // Block can contain both block and inliner elements
+            expect(() => {
+                const blockChild = <TestBlock />;
+                const inlinerChild = <TestInliner />;
+                const containerBlock = (
+                    <TestBlock>
+                        {blockChild}
+                        {inlinerChild}
+                    </TestBlock>
+                );
+            }).not.toThrow();
+        });
+
+        it('should work with text content in inliner elements', () => {
+            const TestInliner = defineInlinerTag<
+                JSProseInliner<'test-inliner', any>
+            >('test-inliner', (props) => props.children);
+
+            // Text content should work fine in inliner elements
+            expect(() => {
+                const element = <TestInliner>Some text content</TestInliner>;
+            }).not.toThrow();
+        });
+
+        it('should work with mixed text and inliner elements', () => {
+            const TestInliner = defineInlinerTag<
+                JSProseInliner<'test-inliner', any>
+            >('test-inliner', (props) => props.children);
+
+            const AnotherInliner = defineInlinerTag<
+                JSProseInliner<'another-inliner', any>
+            >('another-inliner', (props) => props.children);
+
+            // Mixed text and inliner elements should work
+            expect(() => {
+                const element = (
+                    <TestInliner>
+                        Some text
+                        <AnotherInliner>nested inliner</AnotherInliner>
+                        more text
+                    </TestInliner>
+                );
+            }).not.toThrow();
         });
     });
 });

@@ -2,7 +2,7 @@ import { toElement } from '../ref';
 import { TextElement } from '../default';
 import { JSProseElementAny, createElement } from '../element';
 import { JSProseTag } from '../tag';
-import { JSProseError } from 'src/error';
+import { JSProseError } from '../error';
 import { validateInlinerChildren } from '../utils';
 
 declare global {

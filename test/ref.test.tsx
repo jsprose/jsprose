@@ -13,7 +13,7 @@ import { defineRef, defineRefs, toElement } from '../src/ref';
 
 describe('References', () => {
     it('should assign element via $ref attribute', () => {
-        const paragraphRef = defineRef(Paragraph);
+        const paragraphRef = defineRef({ tag: Paragraph });
 
         <Blocks>
             <Paragraph>Block Paragraph 1</Paragraph>
@@ -37,7 +37,7 @@ describe('References', () => {
     });
 
     it('should insert and automatically unwrap $ref element in JSX', () => {
-        const MyParagraph = defineRef(Paragraph);
+        const MyParagraph = defineRef({ tag: Paragraph });
 
         const blocks = (
             <Blocks>
@@ -66,14 +66,14 @@ describe('References', () => {
     });
 
     it('should throw when trying to unwrap undefined reference in JSX', () => {
-        const UndefinedParagraph = defineRef(Paragraph);
+        const UndefinedParagraph = defineRef({ tag: Paragraph });
         expect(() => {
             <Blocks>{UndefinedParagraph}</Blocks>;
         }).toThrow('Unable to unwrap undefined JSProse reference!');
     });
 
     it('should throw when trying to reassign an already assigned reference', () => {
-        const paragraphRef = defineRef(Paragraph);
+        const paragraphRef = defineRef({ tag: Paragraph });
 
         <Paragraph $ref={paragraphRef}>First assignment</Paragraph>;
 
@@ -85,7 +85,7 @@ describe('References', () => {
     });
 
     it('should throw when assigning wrong element type to reference', () => {
-        const paragraphRef = defineRef(Paragraph);
+        const paragraphRef = defineRef({ tag: Paragraph });
 
         expect(() => {
             paragraphRef.element = {
@@ -99,7 +99,7 @@ describe('References', () => {
     });
 
     it('should infer element type from tag automatically', () => {
-        const paragraphRef = defineRef(Paragraph);
+        const paragraphRef = defineRef({ tag: Paragraph });
 
         <Paragraph $ref={paragraphRef}>Test content</Paragraph>;
 
@@ -110,29 +110,34 @@ describe('References', () => {
     });
 
     it('should create ref with slug property', () => {
-        const paragraphRef = defineRef(Paragraph, 'my-paragraph');
+        const paragraphRef = defineRef({
+            tag: Paragraph,
+            slug: 'my-paragraph',
+        });
 
         expect(paragraphRef.slug).toBe('my-paragraph');
         expect(paragraphRef.tag).toBe(Paragraph);
-        expect(paragraphRef.url).toBeDefined();
-        expect(typeof paragraphRef.url).toBe('string');
+        expect(paragraphRef.url).toBeUndefined();
     });
 
     it('should create ref without slug property', () => {
-        const paragraphRef = defineRef(Paragraph);
+        const paragraphRef = defineRef({ tag: Paragraph });
 
         expect(paragraphRef.slug).toBeUndefined();
         expect(paragraphRef.tag).toBe(Paragraph);
-        expect(paragraphRef.url).toBeDefined();
-        expect(typeof paragraphRef.url).toBe('string');
+        expect(paragraphRef.url).toBeUndefined();
     });
 
-    it('should have url property with import.meta.url', () => {
-        const paragraphRef = defineRef(Paragraph, 'test-slug');
+    it('should have url property with custom url', () => {
+        const paragraphRef = defineRef({
+            tag: Paragraph,
+            slug: 'test-slug',
+            url: 'custom-url',
+        });
 
-        expect(paragraphRef.url).toBeDefined();
+        expect(paragraphRef.url).toBe('custom-url');
         expect(typeof paragraphRef.url).toBe('string');
-        expect(paragraphRef.url.length).toBeGreaterThan(0);
+        expect(paragraphRef.url!.length).toBeGreaterThan(0);
     });
 });
 
@@ -144,7 +149,7 @@ describe('defineRefs', () => {
             link: Text,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs });
 
         expect(refs.title).toBeDefined();
         expect(refs.content).toBeDefined();
@@ -161,7 +166,7 @@ describe('defineRefs', () => {
             footer: Text,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs });
 
         expect(refs.header.slug).toBe('header');
         expect(refs.footer.slug).toBe('footer');
@@ -173,10 +178,10 @@ describe('defineRefs', () => {
             sidebar: Text,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs, url: 'test-url' });
 
-        expect(refs.main.url).toBeDefined();
-        expect(refs.sidebar.url).toBeDefined();
+        expect(refs.main.url).toBe('test-url');
+        expect(refs.sidebar.url).toBe('test-url');
         expect(typeof refs.main.url).toBe('string');
         expect(typeof refs.sidebar.url).toBe('string');
     });
@@ -186,7 +191,7 @@ describe('defineRefs', () => {
             testParagraph: Paragraph,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs });
 
         <Paragraph $ref={refs.testParagraph}>Test content</Paragraph>;
 
@@ -202,17 +207,17 @@ describe('defineRefs', () => {
             namedParagraph: Paragraph,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs });
 
         <Paragraph $ref={refs.namedParagraph}>Content</Paragraph>;
 
         expect(refs.namedParagraph.slug).toBe('namedParagraph');
-        expect(refs.namedParagraph.url).toBeDefined();
+        expect(refs.namedParagraph.url).toBeUndefined();
         expect(refs.namedParagraph.element).toBeDefined();
     });
 
     it('should handle empty ref definitions', () => {
-        const refs = defineRefs({});
+        const refs = defineRefs({ defs: {} });
 
         expect(Object.keys(refs)).toHaveLength(0);
     });
@@ -224,7 +229,7 @@ describe('defineRefs', () => {
             t1: Text,
         };
 
-        const refs = defineRefs(refDefs);
+        const refs = defineRefs({ defs: refDefs });
 
         <Paragraph $ref={refs.p1}>Content 1</Paragraph>;
         <Paragraph $ref={refs.p2}>Content 2</Paragraph>;

@@ -290,7 +290,6 @@ describe('Utils', () => {
                 (props) => props.children,
             );
 
-            // This should work - inliner containing inliner
             expect(() => {
                 const inlinerElement = <TestInliner />;
                 const validElement = (
@@ -298,7 +297,6 @@ describe('Utils', () => {
                 );
             }).not.toThrow();
 
-            // This should throw - inliner containing block
             expect(() => {
                 const blockElement = <TestBlock />;
                 const invalidElement = (
@@ -326,7 +324,6 @@ describe('Utils', () => {
                 JSProseInliner<'test-inliner', any>
             >('test-inliner', (props) => props.children);
 
-            // Block can contain both block and inliner elements
             expect(() => {
                 const blockChild = <TestBlock />;
                 const inlinerChild = <TestInliner />;
@@ -344,7 +341,6 @@ describe('Utils', () => {
                 JSProseInliner<'test-inliner', any>
             >('test-inliner', (props) => props.children);
 
-            // Text content should work fine in inliner elements
             expect(() => {
                 const element = <TestInliner>Some text content</TestInliner>;
             }).not.toThrow();
@@ -359,7 +355,6 @@ describe('Utils', () => {
                 JSProseInliner<'another-inliner', any>
             >('another-inliner', (props) => props.children);
 
-            // Mixed text and inliner elements should work
             expect(() => {
                 const element = (
                     <TestInliner>
@@ -378,7 +373,7 @@ describe('Utils', () => {
                 'test',
                 () => 'test data',
             );
-            const testRef = defineRef(TestTag);
+            const testRef = defineRef({ tag: TestTag });
 
             expect(isRef(testRef)).toBe(true);
         });
@@ -397,7 +392,7 @@ describe('Utils', () => {
                 'test',
                 () => 'test data',
             );
-            const testRef = defineRef(TestTag);
+            const testRef = defineRef({ tag: TestTag });
 
             expect(isRef(testRef, TestTag)).toBe(true);
         });
@@ -410,7 +405,7 @@ describe('Utils', () => {
             const TestTagInliner = defineInlinerTag<
                 JSProseInliner<'test', string>
             >('test', () => 'test data');
-            const testRef = defineRef(TestTagBlock);
+            const testRef = defineRef({ tag: TestTagBlock });
 
             expect(isRef(testRef, TestTagInliner)).toBe(false);
         });
@@ -424,7 +419,7 @@ describe('Utils', () => {
                 'test2',
                 () => 'test data',
             );
-            const testRef = defineRef(TestTag1);
+            const testRef = defineRef({ tag: TestTag1 });
 
             expect(isRef(testRef, TestTag2)).toBe(false);
         });

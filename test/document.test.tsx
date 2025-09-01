@@ -8,17 +8,22 @@ import {
     toElement,
     defineBlockTag,
     JSProseBlock,
+    defineRefs,
 } from '../src';
 
 describe('Document', () => {
     describe('basic functionality', () => {
         it('should create a document with refs and assign values correctly', () => {
-            const doc = defineDocument({
-                refs: {
+            const refs = defineRefs({
+                defs: {
                     myParagraph: Paragraph,
                     myText: Text,
                 },
-                blocks: ({ myParagraph, myText }) => {
+            });
+
+            const doc = defineDocument({
+                refs,
+                content: ({ myParagraph, myText }) => {
                     return (
                         <Blocks>
                             <Paragraph $ref={myParagraph}>
@@ -49,20 +54,18 @@ describe('Document', () => {
 
             expect(doc.refs.myParagraph.slug).toBe('myParagraph');
             expect(doc.refs.myText.slug).toBe('myText');
-            expect(doc.refs.myParagraph.url).toBeDefined();
-            expect(doc.refs.myText.url).toBeDefined();
-            expect(typeof doc.refs.myParagraph.url).toBe('string');
-            expect(typeof doc.refs.myText.url).toBe('string');
+            expect(doc.refs.myParagraph.url).toBeUndefined();
+            expect(doc.refs.myText.url).toBeUndefined();
 
-            expect(doc.blocks.data).toHaveLength(4);
-            expect(doc.blocks.data[0]).toBe(paragraphElement);
-            expect(doc.blocks.data[2]).toBe(paragraphElement);
-            expect(doc.blocks.data[3].data[2]).toBe(textElement);
+            expect(doc.content.data).toHaveLength(4);
+            expect(doc.content.data[0]).toBe(paragraphElement);
+            expect(doc.content.data[2]).toBe(paragraphElement);
+            expect(doc.content.data[3].data[2]).toBe(textElement);
         });
 
         it('should create a document without refs property', () => {
             const doc = defineDocument({
-                blocks: () => {
+                content: () => {
                     return (
                         <Blocks>
                             <Paragraph>Simple paragraph</Paragraph>
@@ -75,20 +78,24 @@ describe('Document', () => {
             });
 
             expect(doc.refs).toEqual({});
-            expect(doc.blocks.data).toHaveLength(2);
-            expect(doc.blocks.data[0].data[0].data).toBe('Simple paragraph');
-            expect(doc.blocks.data[1].data[1].data).toBe('nested text');
+            expect(doc.content.data).toHaveLength(2);
+            expect(doc.content.data[0].data[0].data).toBe('Simple paragraph');
+            expect(doc.content.data[1].data[1].data).toBe('nested text');
         });
     });
 
     describe('ref validation', () => {
         it('should throw error when ref is not assigned', () => {
+            const refs = defineRefs({
+                defs: {
+                    unassignedRef: Paragraph,
+                },
+            });
+
             expect(() => {
                 defineDocument({
-                    refs: {
-                        unassignedRef: Paragraph,
-                    },
-                    blocks: ({ unassignedRef }) => {
+                    refs,
+                    content: ({ unassignedRef }) => {
                         return (
                             <Blocks>
                                 <Paragraph>No ref assignment here</Paragraph>
@@ -97,18 +104,22 @@ describe('Document', () => {
                     },
                 });
             }).toThrow(
-                'Document reference "unassignedRef" was not assigned a value in the blocks function!',
+                'Document reference "unassignedRef" was not assigned a value in the content function!',
             );
         });
 
         it('should throw error when ref is assigned to wrong element type', () => {
+            const refs = defineRefs({
+                defs: {
+                    paragraphRef: Paragraph,
+                    textRef: Text,
+                },
+            });
+
             expect(() => {
                 defineDocument({
-                    refs: {
-                        paragraphRef: Paragraph,
-                        textRef: Text,
-                    },
-                    blocks: ({ paragraphRef, textRef }) => {
+                    refs,
+                    content: ({ paragraphRef, textRef }) => {
                         return (
                             <Blocks>
                                 {/* @ts-expect-error Incorrectly assign Text ref to Paragraph element */}
@@ -130,11 +141,15 @@ describe('Document', () => {
 
     describe('ref reuse and identity', () => {
         it('should maintain ref element identity across multiple uses', () => {
-            const doc = defineDocument({
-                refs: {
+            const refs = defineRefs({
+                defs: {
                     sharedText: Text,
                 },
-                blocks: ({ sharedText }) => {
+            });
+
+            const doc = defineDocument({
+                refs,
+                content: ({ sharedText }) => {
                     return (
                         <Blocks>
                             <Paragraph>
@@ -150,9 +165,9 @@ describe('Document', () => {
             const textElement = toElement(doc.refs.sharedText)!;
             expect(textElement.data).toBe('shared');
 
-            expect(doc.blocks.data[0].data[1]).toBe(textElement);
-            expect(doc.blocks.data[1].data[1]).toBe(textElement);
-            expect(doc.blocks.data[2].data[1]).toBe(textElement);
+            expect(doc.content.data[0].data[1]).toBe(textElement);
+            expect(doc.content.data[1].data[1]).toBe(textElement);
+            expect(doc.content.data[2].data[1]).toBe(textElement);
         });
 
         it('should work with custom tags that have refs', () => {
@@ -161,11 +176,15 @@ describe('Document', () => {
                 (props) => `Custom: ${props.children?.length || 0} items`,
             );
 
-            const doc = defineDocument({
-                refs: {
+            const refs = defineRefs({
+                defs: {
                     customRef: CustomBlock,
                 },
-                blocks: ({ customRef }) => {
+            });
+
+            const doc = defineDocument({
+                refs,
+                content: ({ customRef }) => {
                     return (
                         <Blocks>
                             <CustomBlock $ref={customRef}>
@@ -184,8 +203,8 @@ describe('Document', () => {
             expect(customEl!.name).toBe('custom');
             expect(customEl!.data).toBe('Custom: 1 items');
 
-            expect(doc.blocks.data[0]).toBe(customEl);
-            expect(doc.blocks.data[1]).toBe(customEl);
+            expect(doc.content.data[0]).toBe(customEl);
+            expect(doc.content.data[1]).toBe(customEl);
         });
     });
 });

@@ -1,43 +1,36 @@
 import { JSProseElementAny } from './element';
-import { defineRefs, JSProseRef, JSProseRefDefs, JSProseRefMap } from './ref';
+import { JSProseRef } from './ref';
 import { JSProseError } from './error';
 
 export interface JSProseDocument<
     TRefs extends Record<string, JSProseRef<any>>,
-    TBlocks extends JSProseElementAny,
+    TContent extends JSProseElementAny,
 > {
     refs: TRefs;
-    blocks: TBlocks;
+    content: TContent;
 }
 
 export function defineDocument<
-    TRefDefs extends JSProseRefDefs,
-    TRefs extends JSProseRefMap<TRefDefs>,
-    TBlocks extends JSProseElementAny,
+    TRefs extends Record<string, JSProseRef<any>>,
+    TContent extends JSProseElementAny,
 >(options: {
-    refs: TRefDefs;
-    blocks: (refs: TRefs) => TBlocks;
-}): JSProseDocument<TRefs, TBlocks>;
+    refs: TRefs;
+    content: (refs: TRefs) => TContent;
+}): JSProseDocument<TRefs, TContent>;
 
-export function defineDocument<TBlocks extends JSProseElementAny>(options: {
-    blocks: () => TBlocks;
-}): JSProseDocument<{}, TBlocks>;
+export function defineDocument<TContent extends JSProseElementAny>(options: {
+    content: () => TContent;
+}): JSProseDocument<{}, TContent>;
 
 export function defineDocument<
-    TRefDefs extends JSProseRefDefs,
-    TRefs extends JSProseRefMap<TRefDefs>,
-    TBlocks extends JSProseElementAny,
+    TRefs extends Record<string, JSProseRef<any>>,
+    TContent extends JSProseElementAny,
 >(options: {
-    refs?: TRefDefs;
-    blocks: (refs?: TRefs) => TBlocks;
-}): JSProseDocument<TRefs | {}, TBlocks> {
-    let refs = {} as TRefs;
-
-    if (options.refs) {
-        refs = defineRefs(options.refs) as TRefs;
-    }
-
-    const blocks = options.blocks(refs);
+    refs?: TRefs;
+    content: (refs?: TRefs) => TContent;
+}): JSProseDocument<TRefs | {}, TContent> {
+    const refs = options.refs || ({} as TRefs);
+    const content = options.content(refs);
 
     if (options.refs) {
         for (const [key, ref] of Object.entries(refs)) {
@@ -47,7 +40,7 @@ export function defineDocument<
                 const refObj = ref as JSProseRef<any>;
                 const refSlug = refObj.slug ? ` "${refObj.slug}"` : ` "${key}"`;
                 throw new JSProseError(
-                    `Document reference${refSlug} was not assigned a value in the blocks function!`,
+                    `Document reference${refSlug} was not assigned a value in the content function!`,
                 );
             }
         }
@@ -55,6 +48,6 @@ export function defineDocument<
 
     return {
         refs,
-        blocks,
+        content,
     };
 }

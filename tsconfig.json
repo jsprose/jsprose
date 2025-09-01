@@ -8,5 +8,5 @@
         "jsxImportSource": "src/dsl",
         "baseUrl": "."
     },
-    "include": ["src/**/*", "tests/**/*"]
+    "include": ["src/**/*", "test/**/*"]
 }

@@ -11,8 +11,12 @@ import {
     blocksName,
     Inliners,
     inlinersName,
+    Link,
+    LinkElement,
+    linkName,
 } from '../src/default';
 import { createElement, JSProseBlock, JSProseInliner } from '../src/element';
+import { defineRef } from '../src/ref';
 
 describe('Default', () => {
     describe('Text component', () => {
@@ -487,6 +491,133 @@ describe('Default', () => {
             )).toThrow(
                 '<Blocks> can contain only blocks! Inliner <inliners> found!',
             );
+        });
+    });
+
+    describe('Link component', () => {
+        it('should have correct name and type', () => {
+            expect(Link.name).toBe(linkName);
+            expect(Link.type).toBe('inliner');
+            expect(linkName).toBe('link');
+        });
+
+        it('should create link element with ref and text label using JSX', () => {
+            const targetRef = defineRef({ tag: Text, slug: 'target' });
+            targetRef.element = Text({ children: 'Target content' });
+
+            const link = <Link to={targetRef}>Click here</Link>;
+
+            expect(link.type).toBe('inliner');
+            expect(link.name).toBe('link');
+            expect(link.data.ref).toBe(targetRef);
+            expect(link.data.label).toBe('Click here');
+        });
+
+        it('should create link element using function call', () => {
+            const targetRef = defineRef({ tag: Paragraph, slug: 'section' });
+            targetRef.element = Paragraph({
+                children: [Text({ children: 'Section content' })],
+            });
+
+            const textChild = Text({ children: 'Go to section' });
+            const link = Link({ to: targetRef, children: [textChild] });
+
+            expect(link.type).toBe('inliner');
+            expect(link.name).toBe('link');
+            expect(link.data.ref).toBe(targetRef);
+            expect(link.data.label).toBe('Go to section');
+        });
+
+        it('should work with refs that have URL', () => {
+            const externalRef = defineRef({
+                tag: Text,
+                slug: 'external',
+                url: 'https://example.com',
+            });
+            externalRef.element = Text({ children: 'External content' });
+
+            const link = <Link to={externalRef}>External link</Link>;
+
+            expect(link.data.ref.url).toBe('https://example.com');
+            expect(link.data.label).toBe('External link');
+        });
+
+        it('should throw error when "to" prop is missing', () => {
+            expect(() => {
+                // @ts-expect-error Missing required "to" prop
+                Link({ children: [Text({ children: 'Invalid link' })] });
+            }).toThrow('Missing "to" prop in <Link> tag!');
+        });
+
+        it('should throw error when "to" prop is not a valid reference', () => {
+            expect(() => {
+                Link({
+                    to: 'invalid' as any,
+                    children: [Text({ children: 'Invalid link' })],
+                });
+            }).toThrow('<Link> "to" prop must be a valid reference!');
+        });
+
+        it('should throw error when Link has no children', () => {
+            const targetRef = defineRef({ tag: Text, slug: 'target' });
+            targetRef.element = Text({ children: 'Target' });
+
+            expect(() => {
+                Link({ to: targetRef, children: [] });
+            }).toThrow('<Link> must have exactly one <Text> child!');
+        });
+
+        it('should throw error when Link has multiple children', () => {
+            const targetRef = defineRef({ tag: Text, slug: 'target' });
+            targetRef.element = Text({ children: 'Target' });
+
+            expect(() => {
+                Link({
+                    to: targetRef,
+                    children: [
+                        Text({ children: 'First' }),
+                        Text({ children: 'Second' }),
+                    ],
+                });
+            }).toThrow('<Link> must have exactly one <Text> child!');
+        });
+
+        it('should throw error when Link child is not a Text element', () => {
+            const targetRef = defineRef({ tag: Text, slug: 'target' });
+            targetRef.element = Text({ children: 'Target' });
+
+            const invalidChild = createElement<JSProseInliner<'other', string>>(
+                {
+                    type: 'inliner',
+                    name: 'other',
+                    data: 'Invalid child',
+                },
+            );
+
+            expect(() => {
+                Link({ to: targetRef, children: [invalidChild] as any });
+            }).toThrow('<Link> child must be a <Text> element!');
+        });
+
+        it('should work within paragraph context with <Text> inside <Link>', () => {
+            const targetRef = defineRef({ tag: Text, slug: 'target' });
+            targetRef.element = Text({ children: 'Referenced text' });
+
+            const paragraph = (
+                <Paragraph>
+                    Visit
+                    <Link to={targetRef}>
+                        <Text>this link</Text>
+                    </Link>
+                    for more info.
+                </Paragraph>
+            );
+
+            expect(paragraph.data).toHaveLength(3);
+            expect(paragraph.data[0].data).toBe('Visit');
+            expect(paragraph.data[1].name).toBe('link');
+            expect(paragraph.data[1].data.label).toBe('this link');
+            expect(paragraph.data[2].data).toBe('for more info.');
         });
     });
 });

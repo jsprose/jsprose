@@ -1,7 +1,8 @@
 import { JSProseBlock, JSProseInliner } from './element';
 import { JSProseError } from './error';
+import { JSProseRef } from './ref';
 import { defineBlockTag, defineInlinerTag } from './tag';
-import { isBlockElement, isInlinerElement, isTagElement } from './utils';
+import { isBlockElement, isInlinerElement, isRef, isTagElement } from './utils';
 
 //
 // Text
@@ -117,5 +118,47 @@ export const Inliners = defineInlinerTag<InlinersElement>(
         }
 
         return children as JSProseInliner<any, any>[];
+    },
+);
+
+//
+// Link
+//
+
+export const linkName = 'link';
+export type LinkElement = JSProseInliner<
+    typeof linkName,
+    { ref: JSProseRef<any>; label: string }
+>;
+export const Link = defineInlinerTag<LinkElement, { to: JSProseRef<any> }>(
+    linkName,
+    (props) => {
+        const { to, children } = props;
+
+        if (!to) {
+            throw new JSProseError('Missing "to" prop in <Link> tag!');
+        }
+
+        if (!isRef(to)) {
+            throw new JSProseError(
+                '<Link> "to" prop must be a valid reference!',
+            );
+        }
+
+        if (!children || children.length !== 1) {
+            throw new JSProseError(
+                '<Link> must have exactly one <Text> child!',
+            );
+        }
+
+        const child = children[0];
+        if (!isTagElement(child, Text)) {
+            throw new JSProseError('<Link> child must be a <Text> element!');
+        }
+
+        return {
+            ref: to,
+            label: child.data,
+        };
     },
 );

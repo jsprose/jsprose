@@ -3,11 +3,14 @@ import { JSProseError } from './error';
 import { JSProseTag } from './tag';
 import { isTagElement } from './utils';
 
+export const JSProseRefSymbol = Symbol('JSProseRef');
+
 export interface JSProseRef<TElement extends JSProseElementAny> {
     element?: TElement;
     readonly tag: JSProseTag<TElement, any>;
     readonly slug?: string;
     readonly url: string;
+    [JSProseRefSymbol]: undefined;
 }
 
 export type JSProseRefDefs = {
@@ -25,6 +28,7 @@ export function defineRef<
     let _element: TElement | undefined = undefined;
 
     return {
+        [JSProseRefSymbol]: undefined,
         tag: tag as JSProseTag<TElement, any>,
         slug,
         url: import.meta.url,

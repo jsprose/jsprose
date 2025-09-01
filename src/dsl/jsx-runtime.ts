@@ -3,7 +3,7 @@ import { TextElement } from '../default';
 import { JSProseElementAny, createElement } from '../element';
 import { JSProseTag } from '../tag';
 import { JSProseError } from '../error';
-import { validateInlinerChildren } from '../utils';
+import { isRef, validateInlinerChildren } from '../utils';
 
 declare global {
     namespace JSX {
@@ -58,7 +58,7 @@ function stringToText(child: any) {
 }
 
 function unwrapRef(child: any) {
-    if (child && typeof child === 'object' && 'element' in child) {
+    if (isRef(child)) {
         const element = toElement(child);
         if (element === undefined) {
             const refSlug = child.slug ? ` "${child.slug}"` : '';

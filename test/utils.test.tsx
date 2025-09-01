@@ -4,10 +4,12 @@ import {
     isTagElement,
     isBlockElement,
     isInlinerElement,
+    isRef,
     validateInlinerChildren,
 } from '../src/utils';
 import { createElement, JSProseBlock, JSProseInliner } from '../src/element';
 import { defineBlockTag, defineInlinerTag } from '../src/tag';
+import { defineRef } from '../src/ref';
 import { JSProseError } from '../src/error';
 
 describe('Utils', () => {
@@ -367,6 +369,76 @@ describe('Utils', () => {
                     </TestInliner>
                 );
             }).not.toThrow();
+        });
+    });
+
+    describe('isRef', () => {
+        it('should return true for a valid ref without tag check', () => {
+            const TestTag = defineInlinerTag<JSProseInliner<'test', string>>(
+                'test',
+                () => 'test data',
+            );
+            const testRef = defineRef(TestTag);
+
+            expect(isRef(testRef)).toBe(true);
+        });
+
+        it('should return false for non-ref objects without tag check', () => {
+            expect(isRef({})).toBe(false);
+            expect(isRef({ tag: 'something' })).toBe(false);
+            expect(isRef(null)).toBe(false);
+            expect(isRef(undefined)).toBe(false);
+            expect(isRef('string')).toBe(false);
+            expect(isRef(123)).toBe(false);
+        });
+
+        it('should return true for a ref with matching tag', () => {
+            const TestTag = defineInlinerTag<JSProseInliner<'test', string>>(
+                'test',
+                () => 'test data',
+            );
+            const testRef = defineRef(TestTag);
+
+            expect(isRef(testRef, TestTag)).toBe(true);
+        });
+
+        it('should return false for a ref with non-matching tag type', () => {
+            const TestTagBlock = defineBlockTag<JSProseBlock<'test', string>>(
+                'test',
+                () => 'test data',
+            );
+            const TestTagInliner = defineInlinerTag<
+                JSProseInliner<'test', string>
+            >('test', () => 'test data');
+            const testRef = defineRef(TestTagBlock);
+
+            expect(isRef(testRef, TestTagInliner)).toBe(false);
+        });
+
+        it('should return false for a ref with non-matching tag name', () => {
+            const TestTag1 = defineInlinerTag<JSProseInliner<'test1', string>>(
+                'test1',
+                () => 'test data',
+            );
+            const TestTag2 = defineInlinerTag<JSProseInliner<'test2', string>>(
+                'test2',
+                () => 'test data',
+            );
+            const testRef = defineRef(TestTag1);
+
+            expect(isRef(testRef, TestTag2)).toBe(false);
+        });
+
+        it('should return false for non-ref objects with tag check', () => {
+            const TestTag = defineInlinerTag<JSProseInliner<'test', string>>(
+                'test',
+                () => 'test data',
+            );
+
+            expect(isRef({}, TestTag)).toBe(false);
+            expect(isRef({ tag: TestTag }, TestTag)).toBe(false);
+            expect(isRef(null, TestTag)).toBe(false);
+            expect(isRef(undefined, TestTag)).toBe(false);
         });
     });
 });

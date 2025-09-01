@@ -1,6 +1,7 @@
 import { JSProseNormalizedChildren } from './children';
 import { JSProseBlock, JSProseElementAny, JSProseInliner } from './element';
 import { JSProseError } from './error';
+import { JSProseRef, JSProseRefSymbol } from './ref';
 import { JSProseTag } from './tag';
 
 export function isTagElement<TElement extends JSProseElementAny, TProps>(
@@ -20,6 +21,23 @@ export function isInlinerElement(
     element: any,
 ): element is JSProseInliner<any, any> {
     return element?.type === 'inliner';
+}
+
+export function isRef<TElement extends JSProseElementAny>(
+    ref: any,
+    tag?: JSProseTag<TElement, any>,
+): ref is JSProseRef<TElement> {
+    if (!ref || typeof ref !== 'object') {
+        return false;
+    }
+
+    const isRef = JSProseRefSymbol in ref;
+
+    if (tag) {
+        return isRef && ref.tag.type === tag.type && ref.tag.name === tag.name;
+    }
+
+    return isRef;
 }
 
 export function validateInlinerChildren(

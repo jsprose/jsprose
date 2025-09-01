@@ -1,20 +1,20 @@
 import { toElement } from '../ref';
 import { TextElement } from '../default';
-import { JSProseElement, JSProseType, createElement } from '../element';
+import { JSProseElementAny, createElement } from '../element';
 import { JSProseTag } from '../tag';
 import { JSProseError } from 'src/error';
 
 declare global {
     namespace JSX {
         interface IntrinsicElements {}
-        type Element = JSProseElement<JSProseType, string, any>;
+        type Element = JSProseElementAny;
     }
 }
 
-export function jsx<TJSProseTag extends JSProseTag<any, any>>(
-    type: TJSProseTag,
-    props: Parameters<TJSProseTag>[0],
-): ReturnType<TJSProseTag> {
+export function jsx<TTag extends JSProseTag<any, any>>(
+    type: TTag,
+    props: Parameters<TTag>[0],
+): ReturnType<TTag> {
     if (props?.children) {
         props.children = processChildren(props.children);
     }

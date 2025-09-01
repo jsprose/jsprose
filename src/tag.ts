@@ -9,27 +9,26 @@ import { WithNormalizedChildren, WithTagChildren } from './children';
 import { JSProseRef } from './ref';
 
 export interface JSProseGlobalProps<
-    TJSProseElement extends JSProseElementAny = JSProseElementAny,
+    TElement extends JSProseElementAny = JSProseElementAny,
 > {
-    $ref?: JSProseRef<TJSProseElement>;
+    $ref?: JSProseRef<TElement>;
 }
 
 export type JSProseTagProps<
-    TJSProseElement extends JSProseElementAny,
+    TElement extends JSProseElementAny,
     TProps = {},
-> = WithTagChildren<TProps> & JSProseGlobalProps<TJSProseElement>;
+> = WithTagChildren<TProps> & JSProseGlobalProps<TElement>;
 
 export type JSProseNormalizedProps<
-    TJSProseElement extends JSProseElementAny,
+    TElement extends JSProseElementAny,
     TProps = {},
-> = WithNormalizedChildren<TProps> & JSProseGlobalProps<TJSProseElement>;
+> = WithNormalizedChildren<TProps> & JSProseGlobalProps<TElement>;
 
-export type JSProseTag<
-    TJSProseElement extends JSProseElementAny,
-    TProps = {},
-> = ((props: JSProseTagProps<TJSProseElement, TProps>) => TJSProseElement) & {
-    type: TJSProseElement['type'];
-    name: TJSProseElement['name'];
+export type JSProseTag<TElement extends JSProseElementAny, TProps = {}> = ((
+    props: JSProseTagProps<TElement, TProps>,
+) => TElement) & {
+    type: TElement['type'];
+    name: TElement['name'];
 };
 
 function defineTag<TElement extends JSProseElementAny, TProps = {}>(

@@ -1,13 +1,11 @@
-import { JSProseElement } from './element';
+import { JSProseElementAny } from './element';
 import { JSProseError } from './error';
 import { JSProseTag } from './tag';
 import { isTagElement } from './utils';
 
-export interface JSProseRef<
-    TJSProseElement extends JSProseElement<any, any, any>,
-> {
-    element?: TJSProseElement;
-    readonly tag: JSProseTag<TJSProseElement, any>;
+export interface JSProseRef<TElement extends JSProseElementAny> {
+    element?: TElement;
+    readonly tag: JSProseTag<TElement, any>;
     readonly slug?: string;
     readonly url: string;
 }
@@ -22,18 +20,18 @@ export type JSProseRefMap<TRefDefs extends JSProseRefDefs> = {
 
 export function defineRef<
     TTag extends JSProseTag<any, any>,
-    TJSProseElement extends ReturnType<TTag>,
->(tag: TTag, slug?: string): JSProseRef<TJSProseElement> {
-    let _element: TJSProseElement | undefined = undefined;
+    TElement extends ReturnType<TTag>,
+>(tag: TTag, slug?: string): JSProseRef<TElement> {
+    let _element: TElement | undefined = undefined;
 
     return {
-        tag: tag as JSProseTag<TJSProseElement, any>,
+        tag: tag as JSProseTag<TElement, any>,
         slug,
         url: import.meta.url,
         get element() {
             return _element;
         },
-        set element(value: TJSProseElement | undefined) {
+        set element(value: TElement | undefined) {
             if (value !== undefined) {
                 if (_element !== undefined) {
                     const refSlug = slug ? ` "${slug}"` : '';
@@ -65,14 +63,14 @@ export function defineRefs<TRefDefs extends JSProseRefDefs>(
     return definedRefs;
 }
 
-export function toElement<
-    TJSProseElement extends JSProseElement<any, any, any>,
->(ref: JSProseRef<TJSProseElement>): TJSProseElement | undefined {
+export function toElement<TElement extends JSProseElementAny>(
+    ref: JSProseRef<TElement>,
+): TElement | undefined {
     return ref.element;
 }
 
 export function toElements(
-    refs: JSProseRef<JSProseElement<any, any, any>>[],
-): (JSProseElement<any, any, any> | undefined)[] {
+    refs: JSProseRef<JSProseElementAny>[],
+): (JSProseElementAny | undefined)[] {
     return refs.map((ref) => ref.element);
 }

@@ -1,10 +1,10 @@
-import { JSProseElement } from './element';
+import { JSProseElementAny } from './element';
 import { defineRefs, JSProseRef, JSProseRefDefs, JSProseRefMap } from './ref';
 import { JSProseError } from './error';
 
 export interface JSProseDocument<
     TRefs extends Record<string, JSProseRef<any>>,
-    TBlocks extends JSProseElement<any, any, any>,
+    TBlocks extends JSProseElementAny,
 > {
     refs: TRefs;
     blocks: TBlocks;
@@ -13,20 +13,20 @@ export interface JSProseDocument<
 export function defineDocument<
     TRefDefs extends JSProseRefDefs,
     TRefs extends JSProseRefMap<TRefDefs>,
-    TBlocks extends JSProseElement<any, any, any>,
+    TBlocks extends JSProseElementAny,
 >(options: {
     refs: TRefDefs;
     blocks: (refs: TRefs) => TBlocks;
 }): JSProseDocument<TRefs, TBlocks>;
 
-export function defineDocument<
-    TBlocks extends JSProseElement<any, any, any>,
->(options: { blocks: () => TBlocks }): JSProseDocument<{}, TBlocks>;
+export function defineDocument<TBlocks extends JSProseElementAny>(options: {
+    blocks: () => TBlocks;
+}): JSProseDocument<{}, TBlocks>;
 
 export function defineDocument<
     TRefDefs extends JSProseRefDefs,
     TRefs extends JSProseRefMap<TRefDefs>,
-    TBlocks extends JSProseElement<any, any, any>,
+    TBlocks extends JSProseElementAny,
 >(options: {
     refs?: TRefDefs;
     blocks: (refs?: TRefs) => TBlocks;

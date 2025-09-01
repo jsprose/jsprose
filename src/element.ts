@@ -29,13 +29,13 @@ export type JSProseInliner<
     TData = undefined,
 > = JSProseElement<'inliner', TName, TData>;
 
-export function createElement<TJSProseElement extends JSProseElementAny>(
+export function createElement<TElement extends JSProseElementAny>(
     element: Omit<
-        TJSProseElement,
+        TElement,
         | typeof __JSProseBlockBrand
         | typeof __JSProseInlinerBrand
         | typeof __JSProseElementNameBrand
     >,
-): TJSProseElement {
-    return element as TJSProseElement;
+): TElement {
+    return element as TElement;
 }

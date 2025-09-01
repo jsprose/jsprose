@@ -3,7 +3,7 @@
 // This prevents some cool compile/editor time checkings like prohibiting certain tags in specific contexts (blocks in inliners and etc.)
 // @see https://github.com/microsoft/TypeScript/issues/21699
 
-import { JSProseElement } from './element';
+import { JSProseElementAny } from './element';
 import { JSProseRef } from './ref';
 
 type ConstructTagChildren<Types extends readonly any[]> =
@@ -12,10 +12,10 @@ type ConstructTagChildren<Types extends readonly any[]> =
     | Types[number][];
 
 export type JSProseTagChildren = ConstructTagChildren<
-    [string, JSProseElement<any, any, any>, JSProseRef<any>]
+    [string, JSProseElementAny, JSProseRef<any>]
 >;
 
-export type JSProseNormalizedChildren = JSProseElement<any, any, any>[];
+export type JSProseNormalizedChildren = JSProseElementAny[];
 
 export type WithTagChildren<T> = Omit<T, 'children'> & {
     children?: JSProseTagChildren;

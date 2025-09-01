@@ -1,15 +1,10 @@
-import {
-    JSProseBlock,
-    JSProseElement,
-    JSProseInliner,
-    JSProseType,
-} from './element';
+import { JSProseBlock, JSProseElementAny, JSProseInliner } from './element';
 import { JSProseTag } from './tag';
 
-export function isTagElement<
-    TElement extends JSProseElement<JSProseType, string, any>,
-    TProps,
->(element: any, tag: JSProseTag<TElement, TProps>): element is TElement {
+export function isTagElement<TElement extends JSProseElementAny, TProps>(
+    element: any,
+    tag: JSProseTag<TElement, TProps>,
+): element is TElement {
     return element?.type === tag.type && element?.name === tag.name;
 }
 
